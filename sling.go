@@ -2,9 +2,11 @@ package sling
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 
 	goquery "github.com/google/go-querystring/query"
 )
@@ -65,7 +67,7 @@ func New() *Sling {
 // mutating the original value will mutate the value within the child Sling.
 func (s *Sling) New() *Sling {
 	// copy Headers pairs into new Header map
-	headerCopy := make(http.Header)
+	headerCopy := make(http.Header, len(s.header))
 	for k, v := range s.header {
 		headerCopy[k] = v
 	}
@@ -201,11 +203,14 @@ func (s *Sling) Base(rawURL string) *Sling {
 // an absolute URL. If parsing errors occur, the rawURL is left unmodified.
 func (s *Sling) Path(path string) *Sling {
 	baseURL, baseErr := url.Parse(s.rawURL)
-	pathURL, pathErr := url.Parse(path)
-	if baseErr == nil && pathErr == nil {
-		s.rawURL = baseURL.ResolveReference(pathURL).String()
-		return s
+	if baseErr != nil {
+		fmt.Fprintf(os.Stderr, "invalid base url:%v\n", baseErr)
 	}
+	pathURL, pathErr := url.Parse(path)
+	if pathErr != nil {
+		fmt.Fprintf(os.Stderr, "invalid path url:%v\n", pathErr)
+	}
+	s.rawURL = baseURL.ResolveReference(pathURL).String()
 	return s
 }
 

@@ -185,6 +185,8 @@ func TestPathSetter(t *testing.T) {
 		{"", "http://b.io", "http://b.io"},
 		{"http://a.io", "", "http://a.io"},
 		{"", "", ""},
+		// invalid url, path
+		{t.Name(), t.Name(), "/" + t.Name()},
 	}
 	for _, c := range cases {
 		sling := New().Base(c.rawURL).Path(c.path)
